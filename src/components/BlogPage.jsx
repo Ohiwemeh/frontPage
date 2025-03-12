@@ -36,8 +36,8 @@ const BlogPage = () => {
   // Filter blogs by selected category
   const filteredBlogs = useMemo(() => {
     if (!postList) return []; // Fallback to empty array if postList is undefined
-    if (!selectedCategory) return postList; // Return all posts if no category is selected
-    return postList.filter((post) => post.category === selectedCategory);
+    if (!selectedCategory || selectedCategory === "All") return postList; // Return all posts if no category or "All" is selected
+    return postList.filter((post) => post.category === selectedCategory || post.category === "All");
   }, [postList, selectedCategory]);
 
   // Paginate blogs

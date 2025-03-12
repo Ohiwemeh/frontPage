@@ -23,7 +23,7 @@ const SideBar = () => {
         } finally {
           setLoading(false);
         }
-      };
+      };  
   
       getPost();
     }, []);

@@ -14,7 +14,7 @@ const BlogCards = ({ blogs }) => {
             {/* Handle cases where `blog.author` is a string or an object */}
             <p className="mb-2 text-gray-400">
               <FaUser className="inline-flex items-center mr-2" />
-              {typeof blog.author === 'string' ? blog.author : blog.author?.name || 'Unknown Author'}
+              {blog.authorName.name}
             </p>
             {/* Ensure the `timestamp` field exists in your Firestore data */}
             <p className="text-sm text-gray-500">

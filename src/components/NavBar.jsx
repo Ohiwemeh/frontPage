@@ -29,7 +29,7 @@ const NavBar = ({ isAuth, setIsAuth }) => {
     // Conditionally include "Create Post" link if user is authenticated
     ...(isAuth ? [{ path: '/create', link: 'Create' }] : []),
     { path: '/about', link: 'About' },
-    { path: '/blogs', link: 'Blogs' },
+    { path: '/blogs', link: '' },
     { path: '/contact', link: 'Contact' },
   ];
 
@@ -37,7 +37,7 @@ const NavBar = ({ isAuth, setIsAuth }) => {
     <header className='bg-black text-white fixed top-0 right-0 left-0 z-50'>
       <nav className='px-4 py-4 max-w-7xl mx-auto flex justify-between items-center'>
         <a href='/' className='text-xl font-bold text-white'>
-          Blog <span className='text-blue-400'>Jo</span>
+          Front<span className='text-blue-400'>Page</span>
         </a>
 
         {/* Desktop Menu */}
