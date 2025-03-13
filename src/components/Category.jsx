@@ -1,7 +1,7 @@
 //import React from 'react'
 
 const Category = ({ onSelectCategory, activeCategory }) => {
-const categories = ["Politics", "Sports", "AI", "Apps", "Tech"];
+const categories = ["Politics", "Sports", ];
 
   return (
     <div className="px-4 mb-8 lg:space-x-16 flex flex-wrap items-center border-b-2 py-5 text-gray-900 font-semibold">

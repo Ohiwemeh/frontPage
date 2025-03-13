@@ -11,15 +11,14 @@ const CreatePost = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const categories = ["All", "Politics", "Sports", "AI", "Apps", "Tech"]; // List of categories
+  const categories = ["Politics", "Sports"]; // List of categories
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Add a new document to the "posts" collection in Firestore
-      const docRef = await addDoc(collection(db, 'posts'), {
+      const postData = {
         title,
         content,
         image,
@@ -27,9 +26,19 @@ const CreatePost = () => {
         authorName: { name: auth.currentUser.displayName, id: auth.currentUser.uid },
         published_date: new Date().toISOString(), // Add the current date as the published date
         reading_time: `${Math.ceil(content.split(' ').length / 200)} min`, // Calculate reading time
-      });
+      };
 
-      console.log('Document written with ID: ', docRef.id);
+      // Add the post to the "All" collection
+      const allCollectionRef = collection(db, 'All',);
+      await addDoc(allCollectionRef, postData);
+
+      // Add the post to the selected category collection if it's not "All"
+      if (category !== 'All') {
+        const categoryCollectionRef = collection(db, category, 'posts');
+        await addDoc(categoryCollectionRef, postData);
+      }
+
+      console.log('Document written successfully');
 
       // Redirect to the home page after successful submission
       navigate('/');

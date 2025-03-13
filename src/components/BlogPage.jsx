@@ -12,7 +12,7 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [postList, setPostList] = useState([]);
 
-  const postCollectionRef = collection(db, "posts");
+  const postCollectionRef = collection(db, "All");
   const pageSize = 12;
 
   // Fetch posts from Firestore

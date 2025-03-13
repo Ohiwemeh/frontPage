@@ -52,7 +52,7 @@ const Root = () => {
           path: "/blogs/:id", // Dynamic route for SinglePage
           element: <SinglePage />,
           loader: async ({ params }) => {
-            const blogRef = doc(db, "posts", params.id); // Reference to the specific blog post
+            const blogRef = doc(db, "All", params.id); // Reference to the specific blog post
             const blogSnap = await getDoc(blogRef);
   
             if (!blogSnap.exists()) {

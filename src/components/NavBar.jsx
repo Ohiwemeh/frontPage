@@ -41,7 +41,7 @@ const NavBar = ({ isAuth, setIsAuth }) => {
         </a>
 
         {/* Desktop Menu */}
-        <ul className='md:flex gap-12 text-lg hidden'>
+        <ul className='lg:flex gap-5 text-lg hidden'>
           {navItems.map(({ path, link }) => (
             <li className='text-white' key={path}>
               <NavLink
@@ -82,7 +82,7 @@ const NavBar = ({ isAuth, setIsAuth }) => {
         </div>
 
         {/* Mobile Menu Toggle Button */}
-        <div className='md:hidden'>
+        <div className='lg:hidden'>
           <button onClick={toggleMenu} className='cursor-pointer' aria-label='Toggle Menu'>
             {isMenuOpen ? <FaXmark className='w-5 h-5' /> : <FaBars className='w-5 h-5' />}
           </button>
