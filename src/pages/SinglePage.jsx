@@ -16,7 +16,7 @@ const SinglePage = () => {
 
   // Function to copy the blog post link to the clipboard
   const copyLink = () => {
-    const blogUrl = `${window.location.origin}/blogs/${id}`; // Construct the full URL
+    const blogUrl = `${window.location.origin}/blogs/${title}`; // Construct the full URL
     navigator.clipboard
       .writeText(blogUrl)
       .then(() => {
@@ -31,7 +31,7 @@ const SinglePage = () => {
 
   // Function to share on social media
   const shareOnSocialMedia = (platform) => {
-    const blogUrl = `${window.location.origin}/blogs/${id}`;
+    const blogUrl = `${window.location.origin}/blogs/${title}`;
     const shareText = `Check out this blog post: ${title}`;
 
     switch (platform) {
