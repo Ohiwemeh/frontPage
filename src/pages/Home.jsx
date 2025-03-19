@@ -1,18 +1,27 @@
-//import React from 'react';
-import Banner from '../components/Banner'
-import BlogPage from '../components/BlogPage'
+import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container';
 
+import MainContent from '../components/MainContent';
+import Latest from '../components/Latest';
+import AppTheme from '../shared-theme/AppTheme.jsx'; // Testing a new import to correct import error
+import TestTheme from '../TestTheme.jsx';
 
-const Home = () => {
+const Home = (props) => {
   return (
-    <div>
-      <Banner/>
+    <TestTheme {...props}>
+       <CssBaseline enableColorScheme />
       
-      <div className='mx-w-7xl mx-auto'>
-        <BlogPage/>
-      </div>
-    </div>
-  )
-}
+      <Container
+        maxWidth="lg"
+        component="main"
+        sx={{ display: 'flex', flexDirection: 'column', my: 16, gap: 4 }}
+      >
+        <MainContent />
+        <Latest />
+      </Container>
+    </TestTheme>
+   
+  );
+};
 
-export default Home
+export default Home;

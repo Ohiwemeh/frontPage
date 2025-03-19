@@ -14,11 +14,13 @@ const SinglePage = () => {
 
   const { title, image, published_date, reading_time, content, id } = blog;
 
-  // Function to copy the blog post link to the clipboard
+  // Function to copy the blog post link, title, and image to the clipboard
   const copyLink = () => {
-    const blogUrl = `${window.location.origin}/blogs/${title}`; // Construct the full URL
+    const blogUrl = `${window.location.origin}/blogs/${id}`; // Construct the full URL
+    const shareText = `Check out this blog post: ${title}\n${blogUrl}\n\n${image}`; // Include title, URL, and image
+
     navigator.clipboard
-      .writeText(blogUrl)
+      .writeText(shareText)
       .then(() => {
         setIsCopied(true); // Show success feedback
         setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
@@ -31,18 +33,27 @@ const SinglePage = () => {
 
   // Function to share on social media
   const shareOnSocialMedia = (platform) => {
-    const blogUrl = `${window.location.origin}/blogs/${title}`;
-    const shareText = `Check out this blog post: ${title}`;
+    const blogUrl = `${window.location.origin}/blogs/${id}`;
+    const shareText = `Check out this blog post: ${title}\n${blogUrl}`; // Include title and URL
 
     switch (platform) {
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(blogUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(blogUrl)}&text=${encodeURIComponent(shareText)}`,
+          '_blank'
+        );
         break;
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}&quote=${encodeURIComponent(shareText)}`,
+          '_blank'
+        );
         break;
       case 'linkedin':
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(blogUrl)}`, '_blank');
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(blogUrl)}&summary=${encodeURIComponent(shareText)}`,
+          '_blank'
+        );
         break;
       default:
         break;

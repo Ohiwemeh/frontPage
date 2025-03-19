@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { auth } from './firebase'; // Import Firebase auth
 import { onAuthStateChanged } from 'firebase/auth';
 import { Outlet } from 'react-router-dom';
-import NavBar from './components/NavBar';
+import AppAppBar from './components/AppAppBar';
 import Footer from './components/Footer';
+import TestTheme from './TestTheme';
 
-const App = () => {
+const App = (props) => {
   const [isAuth, setIsAuth] = useState(localStorage.getItem('isAuth') === 'true');
 
   // Check authentication state on page load
@@ -27,11 +28,11 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <NavBar isAuth={isAuth} setIsAuth={setIsAuth} />
+    <TestTheme {...props}>
+      <AppAppBar  isAuth={isAuth} setIsAuth={setIsAuth} />
       <Outlet />
       <Footer />
-    </div>
+    </TestTheme>
   );
 };
 

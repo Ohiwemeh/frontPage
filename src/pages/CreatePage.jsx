@@ -78,7 +78,7 @@ const CreatePost = () => {
         <div>
           <label htmlFor="image" className="block text-lg font-medium text-gray-700 dark:text-gray-300">Image URL</label>
           <input
-            type="url"
+            type="file"
             id="image"
             value={image}
             onChange={(e) => setImage(e.target.value)}
