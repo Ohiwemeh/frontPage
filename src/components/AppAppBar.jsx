@@ -3,6 +3,7 @@ import { alpha, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
@@ -13,6 +14,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
 import Sitemark from './SitemarkIcon';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -30,13 +33,34 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   padding: '8px 12px',
 }));
 
-export default function AppAppBar() {
+export default function AppAppBar({isAuth, setIsAuth  }) {
   const [open, setOpen] = React.useState(false);
+
+  const handleLogout = () => {
+      signOut(auth)
+        .then(() => {
+          localStorage.removeItem('isAuth'); // Remove isAuth from localStorage
+          setIsAuth(false); // Update isAuth state
+          navigate('/login'); // Redirect to login page after logout
+        })
+        .catch((error) => {
+          console.error('Error signing out:', error);
+        });
+    };
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
 
+  const navItems = [
+    { path: '/', link: 'Home' },
+    // Conditionally include "Create Post" link if user is authenticated
+    ...(isAuth ? [{ path: '/create', link: 'Create' }] : []),
+    { path: '/about', link: 'About' },
+    { path: '/blogs', link: '' },
+    { path: '/contact', link: 'Contact' },
+  ];
+  
   return (
     <AppBar
       position="fixed"
@@ -51,26 +75,20 @@ export default function AppAppBar() {
       <Container maxWidth="lg">
         <StyledToolbar variant="dense" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
-            <Sitemark />
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small">
-                Features
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Testimonials
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Highlights
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Pricing
-              </Button>
-              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                FAQ
-              </Button>
-              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                Blog
-              </Button>
+          <h1 className="text-4xl font-bold text-base bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+  FRONTPAGE
+</h1>
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }} className="lg:flex gap-5 ml-9">
+             {navItems.map(({ path, link }) => (
+                        <button className='text-white' key={path}>
+                          <NavLink
+                            className={({ isActive }) => (isActive ? 'text-blue-500' : 'hover:text-blue-500')}
+                            to={path}
+                          >
+                            {link}
+                          </NavLink>
+                        </button>
+                      ))}
             </Box>
           </Box>
           <Box
@@ -80,12 +98,27 @@ export default function AppAppBar() {
               alignItems: 'center',
             }}
           >
-            <Button color="primary" variant="text" size="small">
-              Sign in
-            </Button>
-            <Button color="primary" variant="contained" size="small">
-              Sign up
-            </Button>
+          {isAuth ? (
+  <button
+    onClick={handleLogout}
+    className="bg-red-500 px-6 py-2 font-medium rounded hover:bg-white hover:text-red-500 transition-all duration-200 ease-in"
+  >
+    Log Out
+  </button>
+) : (
+  <>
+    <NavLink to="/login">
+      <Button color="primary" variant="text" size="small">
+        Sign in
+      </Button>
+    </NavLink>
+    <NavLink to="/signUp">
+      <Button color="primary" variant="contained" size="small">
+        Sign up
+      </Button>
+    </NavLink>
+  </>
+)}
             <ColorModeIconDropdown />
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>

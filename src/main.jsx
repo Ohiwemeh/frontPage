@@ -16,6 +16,7 @@ import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
 import CreatePost from './pages/CreatePage.jsx';
 import SinglePage from './pages/SinglePage.jsx';
+import SignUp from './pages/SignUp.jsx';
 
 // Root component to manage isAuth state
 const Root = () => {
@@ -66,6 +67,10 @@ const Root = () => {
           path: "/login",
           element: <Login setIsAuth={setIsAuth} />, // Pass setIsAuth to Login
         },
+        {
+          path: "/signUp",
+          element: <SignUp/>
+        }
       ],
     },
   ]);

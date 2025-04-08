@@ -74,9 +74,12 @@ const NavBar = ({ isAuth, setIsAuth }) => {
             </button>
           ) : (
             <NavLink to='/login'>
-              <button className='bg-blue-500 px-6 py-2 font-medium rounded hover:bg-white hover:text-blue-500 transition-all duration-200 ease-in'>
-                Log In
-              </button>
+             <Button color="primary" variant="text" size="small">
+              Sign in
+            </Button>
+            <Button color="primary" variant="contained" size="small">
+              Sign up
+            </Button>
             </NavLink>
           )}
         </div>
