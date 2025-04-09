@@ -6,75 +6,114 @@ import { Helmet } from 'react-helmet';
 const SinglePage = () => {
   const blog = useLoaderData();
   const [isCopied, setIsCopied] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageElement, setImageElement] = useState(null);
 
-  // Set meta tags for rich sharing previews
+  // Prepare image element for copying
   useEffect(() => {
-    if (blog) {
-      const metaDescription = blog.content.substring(0, 160);
-      document.title = `${blog.title} | Your Blog Name`;
-      
-      // Clean up existing meta tags
-      const existingMetaTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]');
-      existingMetaTags.forEach(tag => tag.remove());
-
-      // Add new meta tags
-      const metaTags = [
-        { property: 'og:title', content: blog.title },
-        { property: 'og:description', content: metaDescription },
-        { property: 'og:image', content: blog.image },
-        { property: 'og:url', content: window.location.href },
-        { property: 'og:type', content: 'article' },
-        { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: blog.title },
-        { name: 'twitter:description', content: metaDescription },
-        { name: 'twitter:image', content: blog.image }
-      ];
-
-      metaTags.forEach(tag => {
-        const meta = document.createElement('meta');
-        Object.entries(tag).forEach(([key, value]) => meta.setAttribute(key, value));
-        document.head.appendChild(meta);
-      });
-    }
+    if (!blog?.image) return;
+    
+    const img = new Image();
+    img.src = blog.image;
+    img.alt = blog.title;
+    img.style.maxWidth = '100%';
+    setImageElement(img);
   }, [blog]);
 
-  if (!blog) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-pulse text-2xl text-gray-600">Loading...</div>
-      </div>
-    );
-  }
+  // Copy post with image to clipboard
+  const copyWithImage = async () => {
+    try {
+      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+      const text = `Check out: "${blog.title}"\n${blogUrl}`;
+      
+      // Create a container for both text and image
+      const container = document.createElement('div');
+      container.innerHTML = `${text}<br/><br/>`;
+      if (imageElement) container.appendChild(imageElement.cloneNode());
+      
+      // Use Clipboard API to copy both text and image
+      const blob = await new Promise(resolve => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imageElement.naturalWidth;
+        canvas.height = imageElement.naturalHeight;
+        ctx.drawImage(imageElement, 0, 0);
+        canvas.toBlob(resolve, 'image/png');
+      });
+      
+      const clipboardItem = new ClipboardItem({
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+        'image/png': blob
+      });
+      
+      await navigator.clipboard.write([clipboardItem]);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Fallback to text-only copy
+      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+      navigator.clipboard.writeText(`Check out: "${blog.title}"\n${blogUrl}\n\n${blog.image}`);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
-  const { title, image, published_date, reading_time, content, id, authorName } = blog;
-
-  // Enhanced sharing function
-  const shareContent = (platform) => {
-    const blogUrl = `${window.location.origin}/blogs/${id}`;
-    const shareText = `Check out: "${title}"\n${blogUrl}`;
+  // Share to social media (image will appear if platform supports link previews)
+  const shareToSocial = (platform) => {
+    const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+    const text = `Check out: "${blog.title}"\n${blogUrl}`;
 
     switch (platform) {
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
         break;
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
         break;
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${image}`)}`, '_blank');
-        break;
-      case 'copy':
-        navigator.clipboard.writeText(`${shareText}\n\n${image}`);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         break;
       default:
         break;
     }
   };
 
-  // Format date
+  // Set Open Graph meta tags for rich link previews
+  useEffect(() => {
+    if (!blog) return;
+
+    const metaDescription = blog.content.substring(0, 160);
+    document.title = `${blog.title} | Your Blog Name`;
+    
+    // Remove existing meta tags
+    const existingMetaTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]');
+    existingMetaTags.forEach(tag => tag.remove());
+
+    // Add new meta tags
+    const metaTags = [
+      { property: 'og:title', content: blog.title },
+      { property: 'og:description', content: metaDescription },
+      { property: 'og:image', content: blog.image },
+      { property: 'og:url', content: window.location.href },
+      { property: 'og:type', content: 'article' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: blog.title },
+      { name: 'twitter:description', content: metaDescription },
+      { name: 'twitter:image', content: blog.image }
+    ];
+
+    metaTags.forEach(tag => {
+      const meta = document.createElement('meta');
+      Object.entries(tag).forEach(([key, value]) => meta.setAttribute(key, value));
+      document.head.appendChild(meta);
+    });
+  }, [blog]);
+
+  if (!blog) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  const { title, published_date, reading_time, content, id, authorName } = blog;
   const formattedDate = new Date(published_date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -82,12 +121,7 @@ const SinglePage = () => {
   });
 
   return (
-    <div className="mt-44">
-      <Helmet className="mt-44">
-        <title>{title} | Your Blog Name</title>
-        <meta name="description" content={content.substring(0, 160)} />
-      </Helmet>
-
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Blog Header */}
         <div className="max-w-3xl mx-auto text-center mb-12">
@@ -98,7 +132,7 @@ const SinglePage = () => {
           <div className="flex items-center justify-center space-x-4 text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
               <FaUser className="mr-2" />
-              <span>{authorName?.name || 'Unknown Author'}</span>
+              <span>{authorName?.name || 'Anonymous Author'}</span>
             </div>
             <span>•</span>
             <div className="flex items-center">
@@ -111,18 +145,18 @@ const SinglePage = () => {
         </div>
 
         {/* Featured Image */}
-        <div className="mb-12 rounded-xl overflow-hidden shadow-lg">
-          {image && (
+        {blog.image && (
+          <div className="mb-12 rounded-xl overflow-hidden shadow-lg">
             <img 
-              src={image} 
+              src={blog.image} 
               alt={title} 
               className="w-full h-auto max-h-96 object-cover"
               onError={(e) => {
                 e.target.src = '/placeholder-image.jpg';
               }}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Blog Content */}
         <div className="max-w-2xl mx-auto prose prose-lg dark:prose-invert">
@@ -145,30 +179,30 @@ const SinglePage = () => {
             </h3>
             <div className="flex space-x-4">
               <button
-                onClick={() => shareContent('twitter')}
+                onClick={() => shareToSocial('twitter')}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                 aria-label="Share on Twitter"
               >
                 <FaTwitter className="text-lg" />
               </button>
               <button
-                onClick={() => shareContent('facebook')}
+                onClick={() => shareToSocial('facebook')}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                 aria-label="Share on Facebook"
               >
                 <FaFacebook className="text-lg" />
               </button>
               <button
-                onClick={() => shareContent('whatsapp')}
+                onClick={() => shareToSocial('whatsapp')}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                 aria-label="Share on WhatsApp"
               >
                 <FaWhatsapp className="text-lg" />
               </button>
               <button
-                onClick={() => shareContent('copy')}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Copy link"
+                onClick={copyWithImage}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors relative"
+                aria-label="Copy with image"
               >
                 <FaCopy className="text-lg" />
                 {isCopied && (
@@ -181,7 +215,7 @@ const SinglePage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
