@@ -1,103 +1,22 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import Avatar from '@mui/material/Avatar';
-import AvatarGroup from '@mui/material/AvatarGroup';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid2';
-import Pagination from '@mui/material/Pagination';
-import Typography from '@mui/material/Typography';
+import React, { useEffect, useMemo, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
+import { Box, Typography, Grid, Chip, Card, CardMedia, CardContent, Avatar } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { Link } from 'react-router-dom';
 import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
 
-const articleInfo = [
-  {
-    tag: 'Engineering',
-    title: 'The future of AI in software engineering',
-    description:
-      'Artificial intelligence is revolutionizing software engineering. Explore how AI-driven tools are enhancing development processes and improving software quality.',
-    authors: [
-      { name: 'Remy Sharp', avatar: '/static/images/avatar/1.jpg' },
-      { name: 'Travis Howard', avatar: '/static/images/avatar/2.jpg' },
-    ],
-  },
-  {
-    tag: 'Product',
-    title: 'Driving growth with user-centric product design',
-    description:
-      'Our user-centric product design approach is driving significant growth. Learn about the strategies we employ to create products that resonate with users.',
-    authors: [{ name: 'Erica Johns', avatar: '/static/images/avatar/6.jpg' }],
-  },
-  {
-    tag: 'Design',
-    title: 'Embracing minimalism in modern design',
-    description:
-      'Minimalism is a key trend in modern design. Discover how our design team incorporates minimalist principles to create clean and impactful user experiences.',
-    authors: [{ name: 'Kate Morrison', avatar: '/static/images/avatar/7.jpg' }],
-  },
-  {
-    tag: 'Company',
-    title: 'Cultivating a culture of innovation',
-    description:
-      'Innovation is at the heart of our company culture. Learn about the initiatives we have in place to foster creativity and drive groundbreaking solutions.',
-    authors: [{ name: 'Cindy Baker', avatar: '/static/images/avatar/3.jpg' }],
-  },
-  {
-    tag: 'Engineering',
-    title: 'Advancing cybersecurity with next-gen solutions',
-    description:
-      'Our next-generation cybersecurity solutions are setting new standards in the industry. Discover how we protect our clients from evolving cyber threats.',
-    authors: [
-      { name: 'Agnes Walker', avatar: '/static/images/avatar/4.jpg' },
-      { name: 'Trevor Henderson', avatar: '/static/images/avatar/5.jpg' },
-    ],
-  },
-  {
-    tag: 'Product',
-    title: 'Enhancing customer experience through innovation',
-    description:
-      'Our innovative approaches are enhancing customer experience. Learn about the new features and improvements that are delighting our users.',
-    authors: [{ name: 'Travis Howard', avatar: '/static/images/avatar/2.jpg' }],
-  },
-  {
-    tag: 'Engineering',
-    title: 'Pioneering sustainable engineering solutions',
-    description:
-      "Learn about our commitment to sustainability and the innovative engineering solutions we're implementing to create a greener future. Discover the impact of our eco-friendly initiatives.",
-    authors: [
-      { name: 'Agnes Walker', avatar: '/static/images/avatar/4.jpg' },
-      { name: 'Trevor Henderson', avatar: '/static/images/avatar/5.jpg' },
-    ],
-  },
-  {
-    tag: 'Product',
-    title: 'Maximizing efficiency with our latest product updates',
-    description:
-      'Our recent product updates are designed to help you maximize efficiency and achieve more. Get a detailed overview of the new features and improvements that can elevate your workflow.',
-    authors: [{ name: 'Travis Howard', avatar: '/static/images/avatar/2.jpg' }],
-  },
-  {
-    tag: 'Design',
-    title: 'Designing for the future: trends and insights',
-    description:
-      'Stay ahead of the curve with the latest design trends and insights. Our design team shares their expertise on creating intuitive and visually stunning user experiences.',
-    authors: [{ name: 'Kate Morrison', avatar: '/static/images/avatar/7.jpg' }],
-  },
-  {
-    tag: 'Company',
-    title: "Our company's journey: milestones and achievements",
-    description:
-      "Take a look at our company's journey and the milestones we've achieved along the way. From humble beginnings to industry leader, discover our story of growth and success.",
-    authors: [{ name: 'Cindy Baker', avatar: '/static/images/avatar/3.jpg' }],
-  },
-];
-
-const StyledTypography = styled(Typography)({
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  WebkitLineClamp: 2,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-});
+// const StyledCard = styled(Card)(({ theme }) => ({
+//   display: 'flex',
+//   flexDirection: 'column',
+//   padding: 0,
+//   height: '100%',
+//   backgroundColor: (theme.vars || theme).palette.background.paper,
+//   '&:hover': {
+//     backgroundColor: 'transparent',
+//     cursor: 'pointer',
+//   },
+// }));
 
 const TitleTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -136,67 +55,107 @@ const TitleTypography = styled(Typography)(({ theme }) => ({
   },
 }));
 
-function Author({ authors }) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 2,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}
-      >
-        <AvatarGroup max={3}>
-          {authors.map((author, index) => (
-            <Avatar
-              key={index}
-              alt={author.name}
-              src={author.avatar}
-              sx={{ width: 24, height: 24 }}
-            />
-          ))}
-        </AvatarGroup>
-        <Typography variant="caption">
-          {authors.map((author) => author.name).join(', ')}
-        </Typography>
-      </Box>
-      <Typography variant="caption">July 14, 2021</Typography>
-    </Box>
-  );
-}
 
-Author.propTypes = {
-  authors: PropTypes.arrayOf(
-    PropTypes.shape({
-      avatar: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-};
+// const StyledCardContent = styled(CardContent)({
+//   display: 'flex',
+//   flexDirection: 'column',
+//   gap: 4,
+//   padding: 16,
+//   flexGrow: 1,
+//   '&:last-child': {
+//     paddingBottom: 16,
+//   },
+// });
+
+const StyledTypography = styled(Typography)({
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
+const categories = ['All', 'Politics', 'sport', 'technology'];
 
 export default function Latest() {
-  const [focusedCardIndex, setFocusedCardIndex] = React.useState(null);
+  const [focusedCardIndex, setFocusedCardIndex] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [postList, setPostList] = useState([]);
 
-  const handleFocus = (index) => {
-    setFocusedCardIndex(index);
-  };
+  const postCollectionRef = collection(db, 'latest');
+  const pageSize = 12;
 
-  const handleBlur = () => {
-    setFocusedCardIndex(null);
-  };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const data = await getDocs(postCollectionRef);
+        const posts = data.docs.map((doc) => {
+          const d = doc.data();
+          return {
+            ...d,
+            id: doc.id,
+            collectionName: 'latest',
+            title: d.title || 'Untitled Post',
+            image: d.image || 'https://via.placeholder.com/400x225?text=No+Image',
+            description: d.description || 'No description available.',
+            authorname: {
+              name: d.authorName?.name || 'Unknown Author',
+              avatar: d.authorName?.avatar || 'https://i.pravatar.cc/150?img=3',
+            },
+            category: d.category || 'Uncategorized',
+            date: d.timestamp?.toDate().toLocaleDateString() || 'Unknown date',
+          };
+        });
+        setPostList(posts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  const filteredBlogs = useMemo(() => {
+    if (!selectedCategory || selectedCategory === 'All') return postList;
+    return postList.filter((post) => post.category === selectedCategory);
+  }, [postList, selectedCategory]);
+
+  const paginatedBlogs = useMemo(() => {
+    return filteredBlogs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredBlogs, currentPage]);
+
+ 
+
+  const handleFocus = (index) => setFocusedCardIndex(index);
+  const handleBlur = () => setFocusedCardIndex(null);
+
+  if (loading) return <div>Loading...</div>;
+  if (!loading && postList.length === 0) return <div>No blogs found in Firestore.</div>;
+  if (filteredBlogs.length === 0) return <div>No blogs match this category.</div>;
 
   return (
-    <div>
-      <Typography variant="h2" gutterBottom>
-        Latest
-      </Typography>
-      <Grid container spacing={8} columns={12} sx={{ my: 4 }}>
-        {articleInfo.map((article, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Typography variant="h4" gutterBottom>Latest</Typography>
+
+      {/* <Box sx={{ display: 'inline-flex', gap: 2, flexWrap: 'wrap' }}>
+        {categories.map((category) => (
+          <Chip
+            key={category}
+            label={category}
+            onClick={() => handleCategoryClick(category)}
+            color={selectedCategory === category ? 'primary' : 'default'}
+          />
+        ))}
+      </Box> */}
+
+      <Grid container spacing={2}>
+        {paginatedBlogs.map((blog, index) => (
+          <Grid item xs={12} md={6} key={blog.id}>
+            <Link to={`/${blog.collectionName}/${blog.id}`} key={blog.id}>
             <Box
               sx={{
                 display: 'flex',
@@ -207,7 +166,7 @@ export default function Latest() {
               }}
             >
               <Typography gutterBottom variant="caption" component="div">
-                {article.tag}
+                {blog.category || 'General'}
               </Typography>
               <TitleTypography
                 gutterBottom
@@ -217,24 +176,18 @@ export default function Latest() {
                 tabIndex={0}
                 className={focusedCardIndex === index ? 'Mui-focused' : ''}
               >
-                {article.title}
-                <NavigateNextRoundedIcon
-                  className="arrow"
-                  sx={{ fontSize: '1rem' }}
-                />
+                {blog.title}
+                <NavigateNextRoundedIcon className="arrow" sx={{ fontSize: '1rem' }} />
               </TitleTypography>
               <StyledTypography variant="body2" color="text.secondary" gutterBottom>
-                {article.description}
+                {blog.content}
               </StyledTypography>
-
-              <Author authors={article.authors} />
+              <Typography variant="caption">{blog.authorname.name}</Typography>
             </Box>
+            </Link>
           </Grid>
         ))}
       </Grid>
-      <Box sx={{ display: 'flex', flexDirection: 'row', pt: 4 }}>
-        <Pagination hidePrevButton hideNextButton count={10} boundaryCount={10} />
-      </Box>
-    </div>
+    </Box>
   );
 }

@@ -2,7 +2,8 @@ import { FaClock, FaUser, FaCopy, FaTwitter, FaFacebook, FaWhatsapp } from 'reac
 import { useLoaderData } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-
+import { Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 const SinglePage = () => {
   const blog = useLoaderData();
   const [isCopied, setIsCopied] = useState(false);
@@ -120,24 +121,33 @@ const SinglePage = () => {
     day: 'numeric'
   });
 
+  const theme = useTheme();
+const isDarkMode = theme.palette.mode === 'dark';
+
+
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto mt-32 px-4 sm:px-6 lg:px-8 py-16">
         {/* Blog Header */}
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-            {title}
-          </h1>
+        <Typography
+  variant="h3"
+  fontWeight="bold"
+  gutterBottom
+  sx={{ color: isDarkMode ? 'common.white' : 'grey.900' }}
+>
+  {title}
+</Typography>
           
           <div className="flex items-center justify-center space-x-4 text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
               <FaUser className="mr-2" />
-              <span>{authorName?.name || 'Anonymous Author'}</span>
+              <span>Admin</span>
             </div>
             <span>•</span>
             <div className="flex items-center">
               <FaClock className="mr-2" />
-              <span>{reading_time || 'Unknown reading time'}</span>
+              <Typography>{reading_time || 'Unknown reading time'}</Typography>
             </div>
             <span>•</span>
             <span>{formattedDate}</span>
@@ -146,11 +156,11 @@ const SinglePage = () => {
 
         {/* Featured Image */}
         {blog.image && (
-          <div className="mb-12 rounded-xl overflow-hidden shadow-lg">
+          <div className="mb-12 rounded-xl flex justify-center items-center overflow-hidden ">
             <img 
               src={blog.image} 
               alt={title} 
-              className="w-full h-auto max-h-96 object-cover"
+              className="w-3/4 h-auto max-h-96 rounded-xl object-cover"
               onError={(e) => {
                 e.target.src = '/placeholder-image.jpg';
               }}
@@ -162,21 +172,33 @@ const SinglePage = () => {
         <div className="max-w-2xl mx-auto prose prose-lg dark:prose-invert">
           {typeof content === 'string' ? (
             content.split('\n').map((paragraph, i) => (
-              <p key={i} className="mb-6 text-gray-700 dark:text-gray-300">
+              <Typography key={i}
+              sx={{
+                mb: 3,
+                color: isDarkMode ? 'grey.300' : 'grey.800',
+                lineHeight: 1.8,
+                fontSize: '1.125rem',
+              }}>
                 {paragraph}
-              </p>
+              </Typography>
             ))
           ) : (
-            <p className="text-gray-700 dark:text-gray-300">{JSON.stringify(content)}</p>
+            <Typography >{JSON.stringify(content)}</Typography>
           )}
         </div>
 
         {/* Share Section */}
         <div className="max-w-2xl mx-auto mt-16 border-t border-gray-200 dark:border-gray-700 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
+            <Typography  
+  sx={{
+    mb: 3,
+    color: isDarkMode ? 'grey.300' : 'grey.800',
+    lineHeight: 1.8,
+    fontSize: '1.125rem',
+  }}>
               Share this article
-            </h3>
+            </Typography>
             <div className="flex space-x-4">
               <button
                 onClick={() => shareToSocial('twitter')}

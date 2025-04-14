@@ -19,8 +19,8 @@ function Copyright() {
     return (
       <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
         {'Copyright © '}
-        <Link color="text.secondary" href="https://mui.com/">
-          Sitemark
+        <Link color="text.secondary">
+            FrontPage
         </Link>
         &nbsp;
         {new Date().getFullYear()}
@@ -59,7 +59,9 @@ const Footer = () => {
             }}
           >
             <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
-              <SitemarkIcon />
+                <Typography variant='h4' className='bg-gradient-to-br from-green-200 to-teal-900 bg-clip-text text-transparent '>
+                  Frontpage
+                </Typography>
               <Typography
                 variant="body2"
                 gutterBottom
@@ -194,7 +196,7 @@ const Footer = () => {
             useFlexGap
             sx={{ justifyContent: 'left', color: 'text.secondary' }}
           >
-            <IconButton
+            {/* <IconButton
               color="inherit"
               size="small"
               href="https://github.com/mui"
@@ -202,7 +204,7 @@ const Footer = () => {
               sx={{ alignSelf: 'center' }}
             >
               <FacebookIcon />
-            </IconButton>
+            </IconButton> */}
             <IconButton
               color="inherit"
               size="small"
@@ -212,7 +214,7 @@ const Footer = () => {
             >
               <TwitterIcon />
             </IconButton>
-            <IconButton
+            {/* <IconButton
               color="inherit"
               size="small"
               href="https://www.linkedin.com/company/mui/"
@@ -220,7 +222,7 @@ const Footer = () => {
               sx={{ alignSelf: 'center' }}
             >
               <LinkedInIcon />
-            </IconButton>
+            </IconButton> */}
           </Stack>
         </Box>
       </Container>

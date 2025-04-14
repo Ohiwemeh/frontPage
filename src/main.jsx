@@ -14,9 +14,11 @@ import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
-import CreatePost from './pages/CreatePage.jsx';
 import SinglePage from './pages/SinglePage.jsx';
 import SignUp from './pages/SignUp.jsx';
+import Politics from './components/Politics.jsx'
+import Technology from './components/Techology.jsx';
+import Sport from './components/Sport.jsx';
 
 // Root component to manage isAuth state
 const Root = () => {
@@ -40,29 +42,35 @@ const Root = () => {
           path: "/about",
           element: <About />,
         },
-        {
-          path: '/create',
-          element: <CreatePost />, // Add the CreatePost route
-        },
+
   
         {
           path: "/contact",
           element: <Contact />,
         },
         {
-          path: "/blogs/:id", // Dynamic route for SinglePage
+          path: "/:collection/:id",
           element: <SinglePage />,
           loader: async ({ params }) => {
-            const blogRef = doc(db, "All", params.id); // Reference to the specific blog post
+            const { collection, id } = params;
+            console.log("🚀 Loader called with:", collection, id);
+          
+            if (!collection || !id) {
+              throw new Error("Missing collection or ID in the route.");
+            }
+          
+            const blogRef = doc(db, collection, id);
             const blogSnap = await getDoc(blogRef);
-  
+          
             if (!blogSnap.exists()) {
+              console.error("❌ Blog not found in Firestore:", collection, id);
               throw new Error("Blog not found");
             }
-  
-            return { id: blogSnap.id, ...blogSnap.data() }; // Return the blog data with ID
+          
+            return { id: blogSnap.id, ...blogSnap.data() };
           },
         },
+        
         {
           path: "/login",
           element: <Login setIsAuth={setIsAuth} />, // Pass setIsAuth to Login
@@ -70,6 +78,16 @@ const Root = () => {
         {
           path: "/signUp",
           element: <SignUp/>
+        },{
+          path:"/politics",
+          element: <Politics/>
+        },{
+          path: "/sport",
+          element: <Sport/>
+        },
+        {
+          path: "/technology",
+          element: <Technology/>
         }
       ],
     },
