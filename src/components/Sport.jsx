@@ -143,9 +143,9 @@ export default function Sport() {
                   <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar alt={blog.authorname.name} src={blog.authorname.avatar} sx={{ width: 24, height: 24 }} />
-                      <Typography variant="caption">{blog.authorname.name}</Typography>
+                      <Typography variant="caption">Admin</Typography>
                     </Box>
-                    <Typography variant="caption">{blog.date}</Typography>
+                    <Typography variant="caption">{blog.published_date}</Typography>
                   </Box>
                 </StyledCard>
               </Link>
