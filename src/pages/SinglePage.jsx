@@ -24,7 +24,7 @@ const SinglePage = () => {
   const copyWithImage = async () => {
     try {
       const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-      const text = `Check out: "${blog.title}"\n${blogUrl}`;
+      const text = `${blogUrl}`;
       
       // Create a container for both text and image
       const container = document.createElement('div');
