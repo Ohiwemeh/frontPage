@@ -24,8 +24,8 @@ const SinglePage = () => {
   // Copy post with image to clipboard
   const copyWithImage = async () => {
     try {
-      const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
-      const text = `Check this: ${blog.title}\n${blogUrl}`;
+      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+      const text = `Check out: "${blog.title}"\n${blogUrl}`;
       
       // Mobile-friendly text copy fallback first
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -96,38 +96,23 @@ const SinglePage = () => {
   };
 
   // Share to social media (image will appear if platform supports link previews)
-  // const shareToSocial = (platform) => {
-  //   const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-  //   const text = `Check out: "${blog.title}"\n${blogUrl}`;
-    
-  //   switch (platform) {
-  //     case 'twitter':
-  //       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
-  //       break;
-  //     case 'facebook':
-  //       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
-  //       break;
-  //     case 'whatsapp':
-  //       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // };
+  const shareToSocial = (platform) => {
+    const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+    const text = `Check out: "${blog.title}"\n${blogUrl}`;
 
-  const shareToWhatsApp = () => {
-    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
-    const text = `Check out: ${blog.title}\n${blogUrl}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
-
-  const shareToTwitter = () => {
-    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
-    const text = `Check out: ${blog.title}`;
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`,
-      '_blank'
-    );
+    switch (platform) {
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        break;
+      default:
+        break;
+    }
   };
 
   // Set Open Graph meta tags for rich link previews
