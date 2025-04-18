@@ -56,18 +56,34 @@ const SinglePage = () => {
           
           canvas.toBlob(async (blob) => {
             try {
-              await navigator.clipboard.write([
+              const clipboardItems = [
                 new ClipboardItem({
                   'text/plain': new Blob([text], { type: 'text/plain' }),
                   'image/png': blob
                 })
-              ]);
+              ];
+              await navigator.clipboard.write(clipboardItems);
               setIsCopied(true);
               setTimeout(() => setIsCopied(false), 2000);
             } catch (err) {
-              fallbackCopy(text, blog.image);
+              // Fallback: Try fetching blob directly (CORS-safe)
+              try {
+                const response = await fetch(blog.image, { mode: 'cors' });
+                const imageBlob = await response.blob();
+                await navigator.clipboard.write([
+                  new ClipboardItem({
+                    'text/plain': new Blob([text], { type: 'text/plain' }),
+                    'image/png': imageBlob
+                  })
+                ]);
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000);
+              } catch {
+                fallbackCopy(text, blog.image);
+              }
             }
           }, 'image/png');
+          
           return;
         }
       }
@@ -131,36 +147,9 @@ const SinglePage = () => {
   };
 
   // Set Open Graph meta tags for rich link previews
-  useEffect(() => {
-    if (!blog) return;
-
-    const metaDescription = blog.content.substring(0, 160);
-    document.title = `${blog.title} | Your Blog Name`;
-    
-    // Remove existing meta tags
-    const existingMetaTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]');
-    existingMetaTags.forEach(tag => tag.remove());
-
-    // Add new meta tags
-    const metaTags = [
-      { property: 'og:title', content: blog.title },
-      { property: 'og:description', content: metaDescription },
-      { property: 'og:image', content: blog.image },
-      { property: 'og:url', content: window.location.href },
-      { property: 'og:type', content: 'article' },
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: blog.title },
-      { name: 'twitter:description', content: metaDescription },
-      { name: 'twitter:image', content: blog.image }
-    ];
-
-    metaTags.forEach(tag => {
-      const meta = document.createElement('meta');
-      Object.entries(tag).forEach(([key, value]) => meta.setAttribute(key, value));
-      document.head.appendChild(meta);
-    });
-  }, [blog]);
-
+ 
+  
+  
   if (!blog) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -180,6 +169,18 @@ const isDarkMode = theme.palette.mode === 'dark';
 
   return (
     <>
+    <Helmet>
+    <title>{blog.title} | Your Blog Name</title>
+    <meta property="og:title" content={blog.title} />
+    <meta property="og:description" content={blog.content.substring(0, 160)} />
+    <meta property="og:image" content={blog.image} />
+    <meta property="og:url" content={window.location.href} />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={blog.title} />
+    <meta name="twitter:description" content={blog.content.substring(0, 160)} />
+    <meta name="twitter:image" content={blog.image} />
+  </Helmet>
       <div className="max-w-7xl mx-auto mt-32 px-4 sm:px-6 lg:px-8 py-16">
         {/* Blog Header */}
         <div className="max-w-3xl mx-auto text-center mb-12">
