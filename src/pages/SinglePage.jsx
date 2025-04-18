@@ -20,11 +20,13 @@ const SinglePage = () => {
     setImageElement(img);
   }, [blog]);
 
+
   // Copy post with image to clipboard
   const copyWithImage = async () => {
     try {
       const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
       const text = `${blogUrl}`;
+      console.log({blog})
       
       // Create a container for both text and image
       const container = document.createElement('div');
@@ -63,7 +65,7 @@ const SinglePage = () => {
   const shareToSocial = (platform) => {
     const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
     const text = `Check out: "${blog.title}"\n${blogUrl}`;
-
+    
     switch (platform) {
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
