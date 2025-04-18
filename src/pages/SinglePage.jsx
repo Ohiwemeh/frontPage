@@ -23,7 +23,7 @@ const SinglePage = () => {
   // Copy post with image to clipboard
   const copyWithImage = async () => {
     try {
-      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+      const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
       const text = `${blogUrl}`;
       
       // Create a container for both text and image
