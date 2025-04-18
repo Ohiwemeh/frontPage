@@ -26,7 +26,6 @@ const SinglePage = () => {
     try {
       const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
       const text = `${blogUrl}`;
-      console.log({blog})
       
       // Create a container for both text and image
       const container = document.createElement('div');
