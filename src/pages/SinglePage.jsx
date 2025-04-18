@@ -23,57 +23,66 @@ const SinglePage = () => {
 
   // Copy post with image to clipboard
   const copyWithImage = async () => {
+    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+    const text = `Check this: ${blog.title}\n${blogUrl}`;
+    
     try {
-      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-      const text = `Check out: "${blog.title}"\n${blogUrl}`;
-      
-      // Mobile-friendly text copy fallback first
+      // Mobile-specific handling
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // For mobile, focus on text copying with image URL
-        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-        return;
-      }
-  
-      // Desktop enhanced copy with image
-      if (navigator.clipboard && window.ClipboardItem) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = blog.image;
-        
-        await new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-  
-        if (img.complete && img.naturalWidth !== 0) {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
+        // Solution 1: Try to copy as HTML with image reference
+        try {
+          const htmlContent = `
+            <div>
+              <p>${text}</p>
+              <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
+            </div>
+          `;
           
-          canvas.toBlob(async (blob) => {
-            try {
-              await navigator.clipboard.write([
-                new ClipboardItem({
-                  'text/plain': new Blob([text], { type: 'text/plain' }),
-                  'image/png': blob
-                })
-              ]);
-              setIsCopied(true);
-              setTimeout(() => setIsCopied(false), 2000);
-            } catch (err) {
-              fallbackCopy(text, blog.image);
-            }
-          }, 'image/png');
-          return;
+          // Create a blob with both text and HTML representations
+          const clipboardItem = new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'text/html': new Blob([htmlContent], { type: 'text/html' })
+          });
+          
+          await navigator.clipboard.write([clipboardItem]);
+        } catch (error) {
+          // Fallback for browsers that don't support ClipboardItem
+          // Solution 2: Create a hidden element with image and text
+          const container = document.createElement('div');
+          container.style.position = 'fixed';
+          container.style.left = '-9999px';
+          container.innerHTML = `
+            <div id="copy-content">
+              <p>${text}</p>
+              <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
+            </div>
+          `;
+          document.body.appendChild(container);
+          
+          // Select and copy
+          const range = document.createRange();
+          range.selectNode(document.getElementById('copy-content'));
+          window.getSelection().removeAllRanges();
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          
+          // Clean up
+          window.getSelection().removeAllRanges();
+          document.body.removeChild(container);
         }
+      } else {
+        // Desktop handling (your existing code)
+        // ... [keep your existing desktop implementation]
       }
-      fallbackCopy(text, blog.image);
+      
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      fallbackCopy(text, blog.image);
+      console.error('Copy failed:', err);
+      // Final fallback - copy just text with image URL
+      await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     }
   };
   
