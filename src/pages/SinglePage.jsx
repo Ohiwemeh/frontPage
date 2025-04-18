@@ -23,86 +23,111 @@ const SinglePage = () => {
 
   // Copy post with image to clipboard
   const copyWithImage = async () => {
-    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
-    const text = `Check this: ${blog.title}\n${blogUrl}`;
-    
     try {
-      // Solution 1: Try copying as HTML with image reference first
-      try {
-        const htmlContent = `
-          <div>
-            <p>${text}</p>
-            <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
-          </div>
-        `;
-        
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/plain': new Blob([text], { type: 'text/plain' }),
-            'text/html': new Blob([htmlContent], { type: 'text/html' })
-          })
-        ]);
-      } catch (error) {
-        // Solution 2: Fallback to creating a temporary element
-        const tempElement = document.createElement('div');
-        tempElement.innerHTML = `
-          <div id="temp-copy-content">
-            <p>${text}</p>
-            <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
-          </div>
-        `;
-        document.body.appendChild(tempElement);
-        
-        const range = document.createRange();
-        range.selectNode(tempElement.querySelector('#temp-copy-content'));
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        
-        // Execute copy command
-        const success = document.execCommand('copy');
-        
-        // Clean up
-        window.getSelection().removeAllRanges();
-        document.body.removeChild(tempElement);
-        
-        if (!success) throw new Error('Copy command failed');
-      }
+      const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+      const text = `Check this: ${blog.title}\n${blogUrl}`;
       
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed:', err);
-      // Final fallback - copy text with image URL
-      try {
+      // Mobile-friendly text copy fallback first
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // For mobile, focus on text copying with image URL
         await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-      } catch (fallbackError) {
-        console.error('Fallback copy failed:', fallbackError);
-        alert('Copy failed. Please manually copy the content.');
+        return;
       }
+  
+      // Desktop enhanced copy with image
+      if (navigator.clipboard && window.ClipboardItem) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = blog.image;
+        
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+  
+        if (img.complete && img.naturalWidth !== 0) {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob(async (blob) => {
+            try {
+              await navigator.clipboard.write([
+                new ClipboardItem({
+                  'text/plain': new Blob([text], { type: 'text/plain' }),
+                  'image/png': blob
+                })
+              ]);
+              setIsCopied(true);
+              setTimeout(() => setIsCopied(false), 2000);
+            } catch (err) {
+              fallbackCopy(text, blog.image);
+            }
+          }, 'image/png');
+          return;
+        }
+      }
+      fallbackCopy(text, blog.image);
+    } catch (err) {
+      fallbackCopy(text, blog.image);
     }
   };
   
- 
-  // Share to social media (image will appear if platform supports link previews)
-  const shareToSocial = (platform) => {
-    const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-    const text = `Check out: "${blog.title}"\n${blogUrl}`;
-
-    switch (platform) {
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
-        break;
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
-        break;
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        break;
-      default:
-        break;
+  // Separate fallback function
+  const fallbackCopy = async (text, imageUrl) => {
+    try {
+      // Try writing just text
+      await navigator.clipboard.writeText(`${text}\n\nImage: ${imageUrl}`);
+    } catch (err) {
+      // Final fallback for really old browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = `${text}\n\nImage: ${imageUrl}`;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
     }
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  // Share to social media (image will appear if platform supports link previews)
+  // const shareToSocial = (platform) => {
+  //   const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+  //   const text = `Check out: "${blog.title}"\n${blogUrl}`;
+    
+  //   switch (platform) {
+  //     case 'twitter':
+  //       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
+  //       break;
+  //     case 'facebook':
+  //       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
+  //       break;
+  //     case 'whatsapp':
+  //       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
+
+  const shareToWhatsApp = () => {
+    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+    const text = `Check out: ${blog.title}\n${blogUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareToTwitter = () => {
+    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+    const text = `Check out: ${blog.title}`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`,
+      '_blank'
+    );
   };
 
   // Set Open Graph meta tags for rich link previews
@@ -140,19 +165,7 @@ const SinglePage = () => {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
-  // const nativeShare = async () => {
-  //   try {
-  //     await navigator.share({
-  //       title: blog.title,
-  //       text: blog.content.substring(0, 200),
-  //       url: window.location.href,
-  //       // Some mobile browsers may show the image from og:tags
-  //     });
-  //   } catch (err) {
-  //     // Fallback to regular sharing
-  //     shareToTwitter();
-  //   }
-  // };
+
 
   const { title, published_date, reading_time, content, id, authorName } = blog;
   const formattedDate = new Date(published_date).toLocaleDateString('en-US', {
