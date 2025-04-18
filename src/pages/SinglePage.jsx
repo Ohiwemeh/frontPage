@@ -27,83 +27,64 @@ const SinglePage = () => {
     const text = `Check this: ${blog.title}\n${blogUrl}`;
     
     try {
-      // Mobile-specific handling
-      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // Solution 1: Try to copy as HTML with image reference
-        try {
-          const htmlContent = `
-            <div>
-              <p>${text}</p>
-              <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
-            </div>
-          `;
-          
-          // Create a blob with both text and HTML representations
-          const clipboardItem = new ClipboardItem({
+      // Solution 1: Try copying as HTML with image reference first
+      try {
+        const htmlContent = `
+          <div>
+            <p>${text}</p>
+            <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
+          </div>
+        `;
+        
+        await navigator.clipboard.write([
+          new ClipboardItem({
             'text/plain': new Blob([text], { type: 'text/plain' }),
             'text/html': new Blob([htmlContent], { type: 'text/html' })
-          });
-          
-          await navigator.clipboard.write([clipboardItem]);
-        } catch (error) {
-          // Fallback for browsers that don't support ClipboardItem
-          // Solution 2: Create a hidden element with image and text
-          const container = document.createElement('div');
-          container.style.position = 'fixed';
-          container.style.left = '-9999px';
-          container.innerHTML = `
-            <div id="copy-content">
-              <p>${text}</p>
-              <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
-            </div>
-          `;
-          document.body.appendChild(container);
-          
-          // Select and copy
-          const range = document.createRange();
-          range.selectNode(document.getElementById('copy-content'));
-          window.getSelection().removeAllRanges();
-          window.getSelection().addRange(range);
-          document.execCommand('copy');
-          
-          // Clean up
-          window.getSelection().removeAllRanges();
-          document.body.removeChild(container);
-        }
-      } else {
-        // Desktop handling (your existing code)
-        // ... [keep your existing desktop implementation]
+          })
+        ]);
+      } catch (error) {
+        // Solution 2: Fallback to creating a temporary element
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = `
+          <div id="temp-copy-content">
+            <p>${text}</p>
+            <img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/>
+          </div>
+        `;
+        document.body.appendChild(tempElement);
+        
+        const range = document.createRange();
+        range.selectNode(tempElement.querySelector('#temp-copy-content'));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        
+        // Execute copy command
+        const success = document.execCommand('copy');
+        
+        // Clean up
+        window.getSelection().removeAllRanges();
+        document.body.removeChild(tempElement);
+        
+        if (!success) throw new Error('Copy command failed');
       }
       
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error('Copy failed:', err);
-      // Final fallback - copy just text with image URL
-      await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      // Final fallback - copy text with image URL
+      try {
+        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (fallbackError) {
+        console.error('Fallback copy failed:', fallbackError);
+        alert('Copy failed. Please manually copy the content.');
+      }
     }
   };
   
-  // Separate fallback function
-  const fallbackCopy = async (text, imageUrl) => {
-    try {
-      // Try writing just text
-      await navigator.clipboard.writeText(`${text}\n\nImage: ${imageUrl}`);
-    } catch (err) {
-      // Final fallback for really old browsers
-      const textarea = document.createElement('textarea');
-      textarea.value = `${text}\n\nImage: ${imageUrl}`;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
-
+ 
   // Share to social media (image will appear if platform supports link previews)
   const shareToSocial = (platform) => {
     const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
