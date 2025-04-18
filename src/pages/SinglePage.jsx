@@ -20,38 +20,68 @@ const SinglePage = () => {
     setImageElement(img);
   }, [blog]);
 
+
   // Copy post with image to clipboard
   const copyWithImage = async () => {
     try {
-      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-      const text = `Check out: "${blog.title}"\n${blogUrl}`;
+      const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+      const text = `Check this: ${blog.title}\n${blogUrl}`;
       
-      // Create a container for both text and image
-      const container = document.createElement('div');
-      container.innerHTML = `${text}<br/><br/>`;
-      if (imageElement) container.appendChild(imageElement.cloneNode());
-      
-      // Use Clipboard API to copy both text and image
-      const blob = await new Promise(resolve => {
+      // First try to copy both text and image using Clipboard API
+      if (navigator.clipboard && window.ClipboardItem) {
+        // Create canvas to convert image to blob
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = imageElement.naturalWidth;
-        canvas.height = imageElement.naturalHeight;
-        ctx.drawImage(imageElement, 0, 0);
-        canvas.toBlob(resolve, 'image/png');
-      });
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = blog.image;
+        
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Continue even if image fails to load
+        });
+  
+        if (img.complete && img.naturalWidth !== 0) {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          ctx.drawImage(img, 0, 0);
+          
+          const blob = await new Promise(resolve => 
+            canvas.toBlob(resolve, 'image/png')
+          );
+          
+          const clipboardItem = new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'image/png': blob
+          });
+          
+          await navigator.clipboard.write([clipboardItem]);
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+          return;
+        }
+      }
       
-      const clipboardItem = new ClipboardItem({
-        'text/plain': new Blob([text], { type: 'text/plain' }),
-        'image/png': blob
-      });
+      // Fallback 1: Try to copy HTML with image reference
+      try {
+        const html = `<div>${text}<br/><br/><img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/></div>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'text/html': blob
+          })
+        ]);
+      } catch (error) {
+        // Fallback 2: Copy just the text with image URL
+        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
+      }
       
-      await navigator.clipboard.write([clipboardItem]);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
-      // Fallback to text-only copy
+      // Final fallback: Just copy text
       const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
       navigator.clipboard.writeText(`Check out: "${blog.title}"\n${blogUrl}\n\n${blog.image}`);
       setIsCopied(true);
@@ -63,7 +93,7 @@ const SinglePage = () => {
   const shareToSocial = (platform) => {
     const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
     const text = `Check out: "${blog.title}"\n${blogUrl}`;
-
+    
     switch (platform) {
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');

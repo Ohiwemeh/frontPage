@@ -8,8 +8,27 @@
     ],
     "rewrites": [
       {
+        "source": "/blog/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/blogs/**",
+        "destination": "/index.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/blog/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
       }
     ]
   },
