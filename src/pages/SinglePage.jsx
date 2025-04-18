@@ -27,86 +27,107 @@ const SinglePage = () => {
       const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
       const text = `Check this: ${blog.title}\n${blogUrl}`;
       
-      // First try to copy both text and image using Clipboard API
+      // Mobile-friendly text copy fallback first
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // For mobile, focus on text copying with image URL
+        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+        return;
+      }
+  
+      // Desktop enhanced copy with image
       if (navigator.clipboard && window.ClipboardItem) {
-        // Create canvas to convert image to blob
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = blog.image;
         
         await new Promise((resolve) => {
           img.onload = resolve;
-          img.onerror = resolve; // Continue even if image fails to load
+          img.onerror = resolve;
         });
   
         if (img.complete && img.naturalWidth !== 0) {
+          const canvas = document.createElement('canvas');
           canvas.width = img.naturalWidth;
           canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0);
           
-          const blob = await new Promise(resolve => 
-            canvas.toBlob(resolve, 'image/png')
-          );
-          
-          const clipboardItem = new ClipboardItem({
-            'text/plain': new Blob([text], { type: 'text/plain' }),
-            'image/png': blob
-          });
-          
-          await navigator.clipboard.write([clipboardItem]);
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
+          canvas.toBlob(async (blob) => {
+            try {
+              await navigator.clipboard.write([
+                new ClipboardItem({
+                  'text/plain': new Blob([text], { type: 'text/plain' }),
+                  'image/png': blob
+                })
+              ]);
+              setIsCopied(true);
+              setTimeout(() => setIsCopied(false), 2000);
+            } catch (err) {
+              fallbackCopy(text, blog.image);
+            }
+          }, 'image/png');
           return;
         }
       }
-      
-      // Fallback 1: Try to copy HTML with image reference
-      try {
-        const html = `<div>${text}<br/><br/><img src="${blog.image}" alt="${blog.title}" style="max-width: 100%;"/></div>`;
-        const blob = new Blob([html], { type: 'text/html' });
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/plain': new Blob([text], { type: 'text/plain' }),
-            'text/html': blob
-          })
-        ]);
-      } catch (error) {
-        // Fallback 2: Copy just the text with image URL
-        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
-      }
-      
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      fallbackCopy(text, blog.image);
     } catch (err) {
-      console.error('Failed to copy:', err);
-      // Final fallback: Just copy text
-      const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-      navigator.clipboard.writeText(`Check out: "${blog.title}"\n${blogUrl}\n\n${blog.image}`);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      fallbackCopy(text, blog.image);
     }
+  };
+  
+  // Separate fallback function
+  const fallbackCopy = async (text, imageUrl) => {
+    try {
+      // Try writing just text
+      await navigator.clipboard.writeText(`${text}\n\nImage: ${imageUrl}`);
+    } catch (err) {
+      // Final fallback for really old browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = `${text}\n\nImage: ${imageUrl}`;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   // Share to social media (image will appear if platform supports link previews)
-  const shareToSocial = (platform) => {
-    const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
-    const text = `Check out: "${blog.title}"\n${blogUrl}`;
+  // const shareToSocial = (platform) => {
+  //   const blogUrl = `${window.location.origin}/blogs/${blog.id}`;
+  //   const text = `Check out: "${blog.title}"\n${blogUrl}`;
     
-    switch (platform) {
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
-        break;
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
-        break;
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        break;
-      default:
-        break;
-    }
+  //   switch (platform) {
+  //     case 'twitter':
+  //       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
+  //       break;
+  //     case 'facebook':
+  //       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
+  //       break;
+  //     case 'whatsapp':
+  //       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
+
+  const shareToWhatsApp = () => {
+    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+    const text = `Check out: ${blog.title}\n${blogUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareToTwitter = () => {
+    const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
+    const text = `Check out: ${blog.title}`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`,
+      '_blank'
+    );
   };
 
   // Set Open Graph meta tags for rich link previews
@@ -143,6 +164,20 @@ const SinglePage = () => {
   if (!blog) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
+
+  // const nativeShare = async () => {
+  //   try {
+  //     await navigator.share({
+  //       title: blog.title,
+  //       text: blog.content.substring(0, 200),
+  //       url: window.location.href,
+  //       // Some mobile browsers may show the image from og:tags
+  //     });
+  //   } catch (err) {
+  //     // Fallback to regular sharing
+  //     shareToTwitter();
+  //   }
+  // };
 
   const { title, published_date, reading_time, content, id, authorName } = blog;
   const formattedDate = new Date(published_date).toLocaleDateString('en-US', {
@@ -231,21 +266,21 @@ const isDarkMode = theme.palette.mode === 'dark';
             </Typography>
             <div className="flex space-x-4">
               <button
-                onClick={() => shareToSocial('twitter')}
+                 onClick={() => shareToTwitter()}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                 aria-label="Share on Twitter"
               >
                 <FaTwitter className="text-lg" />
               </button>
-              <button
+              {/* <button
                 onClick={() => shareToSocial('facebook')}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                 aria-label="Share on Facebook"
               >
                 <FaFacebook className="text-lg" />
-              </button>
+              </button> */}
               <button
-                onClick={() => shareToSocial('whatsapp')}
+                  onClick={() => shareToWhatsApp()}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                 aria-label="Share on WhatsApp"
               >
