@@ -73,7 +73,7 @@ const WelcomePage = () => {
       <HeroSection>
         <Container maxWidth="md">
           <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Welcome to FrontPage
+            Welcome to AfricanTimes
           </Typography>
           <Typography variant="h5" component="p" color="text.secondary">
             Your gateway to curated content across politics, sports, and technology

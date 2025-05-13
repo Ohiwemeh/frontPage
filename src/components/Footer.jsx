@@ -20,7 +20,7 @@ function Copyright() {
       <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
         {'Copyright © '}
         <Link color="text.secondary">
-            FrontPage
+            AfricanTimes
         </Link>
         &nbsp;
         {new Date().getFullYear()}
@@ -60,7 +60,7 @@ const Footer = () => {
           >
             <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
                 <Typography variant='h4' className='bg-gradient-to-br from-green-200 to-teal-900 bg-clip-text text-transparent '>
-                  Frontpage
+                AfricanTimes
                 </Typography>
               <Typography
                 variant="body2"
@@ -183,7 +183,7 @@ const Footer = () => {
             <IconButton
               color="inherit"
               size="small"
-              href="https://x.com/MaterialUI"
+              href="/"
               aria-label="X"
               sx={{ alignSelf: 'center' }}
             >

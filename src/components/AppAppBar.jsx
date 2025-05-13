@@ -58,7 +58,7 @@ export default function AppAppBar() {
         <StyledToolbar variant="dense" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
             <h1 className="text-4xl font-bold text-base bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              FRONTPAGE
+              AFRICANTIMES
             </h1>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }} className="lg:flex gap-5 ml-9">
               {navItems.map(({ path, link }) => (
