@@ -27,14 +27,14 @@ const SinglePage = () => {
       const blogUrl = `${window.location.origin}/${blog.category}/${blog.id}`;
       const text = `Check this: ${blog.title}\n${blogUrl}`;
       
-      // Mobile-friendly text copy fallback first
-      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // For mobile, focus on text copying with image URL
-        await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-        return;
-      }
+      // // Mobile-friendly text copy fallback first
+      // if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      //   // For mobile, focus on text copying with image URL
+      //   await navigator.clipboard.writeText(`${text}\n\nImage: ${blog.image}`);
+      //   setIsCopied(true);
+      //   setTimeout(() => setIsCopied(false), 2000);
+      //   return;
+      // }
   
       // Desktop enhanced copy with image
       if (navigator.clipboard && window.ClipboardItem) {
